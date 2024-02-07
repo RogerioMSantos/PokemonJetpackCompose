@@ -9,6 +9,7 @@ data class GetPokemonListResponse (
     val results: MutableList<Pokemon?>
 
 ) {
+    @Serializable
     data class Pokemon(var name: String, val url: String) {
         var idx: Int = 0
 

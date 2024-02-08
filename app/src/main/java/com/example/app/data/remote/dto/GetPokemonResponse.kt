@@ -8,17 +8,23 @@ data class GetPokemonResponse (
     val name: String,
     val id: Int,
     val sprites: Sprites,
-    val types: MutableList<Types>
+    val types: List<Type>,
 
 ){
     @Serializable
     data class Sprites (
         val front_default: String,
-        val front_female: String
+        val front_female: String?
     )
 
     @Serializable
-    data class Types (
-        val name: String
+    data class Type (
+        val type: Species?
+    )
+
+    @Serializable
+    data class Species (
+        val name: String,
+        val url: String
     )
 }

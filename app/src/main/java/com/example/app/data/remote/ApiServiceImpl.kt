@@ -1,5 +1,7 @@
 package com.example.app.data.remote
 
+import com.example.app.data.remote.ApiService
+import com.example.app.data.remote.HttpRoutes
 import com.example.app.data.remote.dto.GetPokemonListRequest
 import com.example.app.data.remote.dto.GetPokemonListResponse
 import com.example.app.data.remote.dto.GetPokemonResponse
@@ -11,8 +13,9 @@ import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.url
+import javax.inject.Inject
 
-class GetServiceImpl(private val client: HttpClient):GetService {
+class ApiServiceImpl @Inject constructor(private val client: HttpClient): ApiService {
     override suspend fun getPokemons(offSet: GetPokemonListRequest): GetPokemonListResponse {
         try {
             return client.get {

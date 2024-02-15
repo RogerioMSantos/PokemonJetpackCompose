@@ -4,8 +4,9 @@ import com.example.app.data.remote.dto.GetPokemonListResponse
 import com.example.app.data.remote.dto.GetPokemonListRequest
 import com.example.app.data.remote.dto.GetPokemonResponse
 
-interface GetService {
+interface ApiService {
 
     suspend fun getPokemons(offSet: GetPokemonListRequest = GetPokemonListRequest()):GetPokemonListResponse
+
     suspend fun getPokemon(pokemon: Any): GetPokemonResponse
 }

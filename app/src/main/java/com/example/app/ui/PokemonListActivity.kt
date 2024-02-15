@@ -1,7 +1,12 @@
-package com.example.app
+package com.example.app.ui
 
-import android.app.Activity
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -14,87 +19,105 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModelProvider
-import ch.qos.logback.core.net.server.Client
 import coil.compose.AsyncImage
-import com.example.app.data.remote.ClientApplication
-import com.example.app.data.remote.GetService
-import com.example.app.data.remote.GetServiceImpl
-import com.example.app.data.remote.dto.GetPokemonListRequest
-import com.example.app.data.remote.dto.GetPokemonListResponse
+import com.example.app.service.PokemonListService
+//import com.example.app.data.remote.ClientApplication
+import com.example.app.entities.Pokemon
+import com.example.app.repository.PokemonRepository
 import com.example.app.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
-import io.ktor.client.HttpClient
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
+import java.lang.ref.WeakReference
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class PokemonListActivity() : AppCompatActivity(){
+class PokemonListActivity : ComponentActivity(){
 
     @Inject
-    lateinit var clientApplication : ClientApplication
+    lateinit var pokemonRepository: PokemonRepository
 
+    private var mService: PokemonListService? = null
+    private var mBound: Boolean = false
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+
+            val binder = service as PokemonListService.PokemonListBinder
+            mService = binder.getService()
+            mBound = true
+            Toast.makeText(baseContext,"Bind feito? $mBound",Toast.LENGTH_SHORT).show()
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            mBound = false
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Toast.makeText(baseContext,"Fazendo bind",Toast.LENGTH_SHORT).show()
+        val intent = Intent(this,PokemonListService::class.java)
+        bindService(intent,connection, Context.BIND_AUTO_CREATE)
+
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
-        val client = clientApplication.client
         super.onCreate(savedInstanceState)
-        val viewModel = ViewModelProvider(this)[PokemonViewModel::class.java]
-        val serviceImpl = GetServiceImpl(client)
+
         setContent {
             AppTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    PokemonsList(viewModel = viewModel,serviceImpl)
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    while (!mBound){}
+                    Greeting(name = "Bind feito")
+//                    PokemonsList(mService,{mBound},pokemonRepository)
                 }
             }
         }
     }
 
     @Composable
-    fun PokemonsList(viewModel:PokemonViewModel,serviceImpl: GetServiceImpl){
-        runBlocking {
-            viewModel.getPokemons(serviceImpl)
-        }
-        val livePokemons = viewModel.livePokemons
-        val pokemons by livePokemons.observeAsState(initial = emptyList())
-        LazyColumn{
-            itemsIndexed(pokemons) {index,pokemon ->
-                PokemonListCard(pokemon = pokemon!!)
-                if(index == pokemons.lastIndex){
-                    runBlocking {
-                        viewModel.getPokemons(serviceImpl)
+    fun PokemonsList(mService: PokemonListService?,checkBind : ()->Boolean, pokemonRepository: PokemonRepository){
+
+        if(checkBind()) {
+
+            runBlocking {
+
+                mService!!.getPokemons()
+            }
+            val livePokemons = mService!!.livePokemons
+            val pokemons by livePokemons.observeAsState(initial = emptyList())
+            LazyColumn {
+                itemsIndexed(pokemons) { index, pokemon ->
+                    PokemonListCard(pokemon = pokemon!!)
+                    if (index == pokemons.lastIndex) {
+                        runBlocking {
+                            mService.getPokemons()
+                        }
                     }
-
                 }
             }
-
         }
     }
 
     @Composable
-    fun PokemonListCard(pokemon: GetPokemonListResponse.Pokemon){
+    fun PokemonListCard(pokemon: Pokemon){
         Card(
             Modifier
                 .fillMaxWidth()
@@ -131,4 +154,13 @@ class PokemonListActivity() : AppCompatActivity(){
             }
         }
     }
+    @Composable
+    fun Greeting(name: String, modifier: Modifier = Modifier) {
+        Text(
+            text = "Hello $name!",
+            modifier = modifier
+        )
+    }
 }
+
+

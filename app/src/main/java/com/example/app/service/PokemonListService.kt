@@ -20,6 +20,8 @@ class PokemonListService : Service(){
         fun getService(): PokemonListService = this@PokemonListService
     }
 
+    override fun onBind(intent: Intent): IBinder = binder
+
     @Inject
     lateinit var pokemonRepository: PokemonRepository
 
@@ -34,9 +36,5 @@ class PokemonListService : Service(){
         pokemons.addAll(pokemonRepository.getPokemons(request))
         nextPage++
         livePokemons.value = pokemons
-    }
-
-    override fun onBind(intent: Intent?): IBinder {
-        return binder
     }
 }

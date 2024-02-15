@@ -69,10 +69,11 @@ class PokemonListActivity : ComponentActivity(){
 
     override fun onStart() {
         super.onStart()
-        Toast.makeText(baseContext,"Fazendo bind",Toast.LENGTH_SHORT).show()
-        val intent = Intent(this,PokemonListService::class.java)
-        bindService(intent,connection, Context.BIND_AUTO_CREATE)
+        Toast.makeText(baseContext, "Fazendo bind", Toast.LENGTH_SHORT).show()
+        Intent(this, PokemonListService::class.java).also { intent ->
+            bindService(intent, connection, Context.BIND_AUTO_CREATE)
 
+        }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,9 +85,9 @@ class PokemonListActivity : ComponentActivity(){
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    while (!mBound){}
-                    Greeting(name = "Bind feito")
-//                    PokemonsList(mService,{mBound},pokemonRepository)
+//                    Greeting(name = "Bind feito")
+
+                    PokemonsList(mService,{mBound},pokemonRepository)
                 }
             }
         }

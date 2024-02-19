@@ -16,6 +16,7 @@
         tools:targetApi="31">
 
         <service android:name=".service.PokemonListService"/>
+        <service android:name=".service.PokemonService"/>
         <activity
             android:name=".ui.PokemonListActivity" />
         <activity

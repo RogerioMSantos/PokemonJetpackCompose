@@ -2,6 +2,7 @@ package com.example.app.entities
 
 import com.github.pozo.KotlinBuilder
 
+
 data class Pokemon (val name: String,val url:String){
     var id: Int = 0
     lateinit var sprite: String

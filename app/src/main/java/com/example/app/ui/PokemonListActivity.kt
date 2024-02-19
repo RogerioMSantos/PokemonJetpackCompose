@@ -6,12 +6,13 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,96 +21,88 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.MutableLiveData
 import coil.compose.AsyncImage
 import com.example.app.service.PokemonListService
 //import com.example.app.data.remote.ClientApplication
 import com.example.app.entities.Pokemon
-import com.example.app.repository.PokemonRepository
 import com.example.app.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import java.lang.ref.WeakReference
-import javax.inject.Inject
 
 @AndroidEntryPoint
-class PokemonListActivity : ComponentActivity(){
-
-    @Inject
-    lateinit var pokemonRepository: PokemonRepository
+class PokemonListActivity : ComponentActivity() {
 
     private var mService: PokemonListService? = null
-    private var mBound: Boolean = false
+    private val mBound = MutableLiveData(false)
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
 
             val binder = service as PokemonListService.PokemonListBinder
             mService = binder.getService()
-            mBound = true
-            Toast.makeText(baseContext,"Bind feito? $mBound",Toast.LENGTH_SHORT).show()
+            mBound.value = true
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
-            mBound = false
+            mBound.value = false
         }
     }
 
     override fun onStart() {
         super.onStart()
-        Toast.makeText(baseContext, "Fazendo bind", Toast.LENGTH_SHORT).show()
         Intent(this, PokemonListService::class.java).also { intent ->
             bindService(intent, connection, Context.BIND_AUTO_CREATE)
 
         }
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
+            val state = mBound.observeAsState(false)
+            var loading by remember {
+                mutableStateOf(true)
+            }
             AppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-//                    Greeting(name = "Bind feito")
 
-                    PokemonsList(mService,{mBound},pokemonRepository)
-                }
-            }
-        }
-    }
+                    if (loading) {
+                        Loading(state) {
+                            loading = it
+                        }
+                    } else {
+                        Column {
+                            PokemonSearch(mService)
+                            PokemonsList(mService)
 
-    @Composable
-    fun PokemonsList(mService: PokemonListService?,checkBind : ()->Boolean, pokemonRepository: PokemonRepository){
-
-        if(checkBind()) {
-
-            runBlocking {
-
-                mService!!.getPokemons()
-            }
-            val livePokemons = mService!!.livePokemons
-            val pokemons by livePokemons.observeAsState(initial = emptyList())
-            LazyColumn {
-                itemsIndexed(pokemons) { index, pokemon ->
-                    PokemonListCard(pokemon = pokemon!!)
-                    if (index == pokemons.lastIndex) {
-                        runBlocking {
-                            mService.getPokemons()
                         }
                     }
                 }
@@ -118,7 +111,61 @@ class PokemonListActivity : ComponentActivity(){
     }
 
     @Composable
-    fun PokemonListCard(pokemon: Pokemon){
+    fun PokemonSearch(mService: PokemonListService?){
+        var text by remember {
+            mutableStateOf("")
+        }
+        Box (modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+            contentAlignment = Alignment.CenterStart
+            ){
+            Row(horizontalArrangement = Arrangement.SpaceAround,
+                    modifier = Modifier.fillMaxWidth()) {
+                TextField(
+                    modifier = Modifier.fillMaxWidth(0.7f),
+                    shape = RoundedCornerShape(50.dp),
+                    value = text,
+                    onValueChange = { text = it },
+                    maxLines = 1,
+                    placeholder = {
+                            Text(text = "Digite o nome ou o id do pokemon")
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent)
+                )
+                Button(onClick = { /*TODO*/ }) {
+                    Text(text = "Buscar")
+                }
+            }
+
+        }
+    }
+
+    @Composable
+    fun PokemonsList(mService: PokemonListService?) {
+        runBlocking {
+
+            mService!!.getPokemons()
+        }
+        val livePokemons = mService!!.livePokemons
+        val pokemons by livePokemons.observeAsState(initial = emptyList())
+        LazyColumn {
+            itemsIndexed(pokemons) { index, pokemon ->
+                PokemonListCard(pokemon = pokemon!!)
+                if (index == pokemons.lastIndex) {
+                    runBlocking {
+                        mService.getPokemons()
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun PokemonListCard(pokemon: Pokemon) {
         Card(
             Modifier
                 .fillMaxWidth()
@@ -126,13 +173,16 @@ class PokemonListActivity : ComponentActivity(){
                 .background(MaterialTheme.colorScheme.background)
                 .padding(10.dp)
         ) {
-            Box (
+            Box(
                 Modifier
                     .fillMaxSize()
-                    .padding(5.dp)) {
-                Row(modifier = Modifier.fillMaxSize(),
-                    verticalAlignment = Alignment.CenterVertically) {
-                    Box{
+                    .padding(5.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box {
                         Text(
                             text = "#${pokemon.id}",
                             fontSize = 50.sp,
@@ -147,21 +197,55 @@ class PokemonListActivity : ComponentActivity(){
                             modifier = Modifier.size(100.dp)
                         )
                     }
-                    Box (modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.CenterStart){
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
                         Text(text = pokemon.name.replaceFirstChar { it.uppercaseChar() })
                     }
                 }
             }
         }
     }
+
     @Composable
-    fun Greeting(name: String, modifier: Modifier = Modifier) {
-        Text(
-            text = "Hello $name!",
-            modifier = modifier
-        )
+    fun Loading(state: State<Boolean>, loadingState: (Boolean) -> Unit) {
+        var progress by remember { mutableFloatStateOf(0.1f) }
+        var loading by remember {
+            mutableStateOf(false)
+        }
+        val scope = rememberCoroutineScope()
+
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                progress = progress
+            )
+        }
+        LaunchedEffect(key1 = progress) {
+            if (!loading) {
+                loading = true
+
+                scope.async {
+                    loadProgress { newProgress ->
+                        progress = newProgress
+                    }
+                }.await()
+            }
+            if (progress >= 1f && state.value) {
+                loadingState(false)
+            }
+        }
     }
+
+    suspend fun loadProgress(updateProgress: (Float) -> Unit) {
+        for (i in 1..100) {
+            updateProgress(i.toFloat() / 100)
+            delay(10)
+        }
+    }
+
+
 }
-
-

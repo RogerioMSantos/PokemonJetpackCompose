@@ -32,9 +32,18 @@ class PokemonListService : Service(){
 
     suspend fun getPokemons(){
         val pokemons = livePokemons.value?.toMutableList() ?:mutableListOf()
-        val request = GetPokemonListRequest(nextPage * QTDPOKEMON, QTDPOKEMON)
-        pokemons.addAll(pokemonRepository.getPokemons(request))
-        nextPage++
-        livePokemons.value = pokemons
+        if(nextPage > 20 ) return
+        if((nextPage - 1 )  * QTDPOKEMON > 1025){
+            val request = GetPokemonListRequest(nextPage * QTDPOKEMON, 25)
+            pokemons.addAll(pokemonRepository.getPokemons(request))
+            nextPage++
+            livePokemons.value = pokemons
+        }
+        else {
+            val request = GetPokemonListRequest(nextPage * QTDPOKEMON, QTDPOKEMON)
+            pokemons.addAll(pokemonRepository.getPokemons(request))
+            nextPage++
+            livePokemons.value = pokemons
+        }
     }
 }

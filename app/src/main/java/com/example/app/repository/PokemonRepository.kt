@@ -8,7 +8,7 @@ import com.example.app.entities.Pokemon
 
 interface PokemonRepository {
 
-    suspend fun getPokemons(offSet:GetPokemonListRequest): MutableList<Pokemon>
+    suspend fun getPokemons(offSet:GetPokemonListRequest): List<Pokemon>
 
     suspend fun getPokemon(pokemon:Any): Pokemon
 }

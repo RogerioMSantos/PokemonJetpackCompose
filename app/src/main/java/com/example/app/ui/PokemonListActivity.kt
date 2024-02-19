@@ -58,6 +58,8 @@ class PokemonListActivity : ComponentActivity() {
     private var mService: PokemonListService? = null
     private val mBound = MutableLiveData(false)
 
+    private var searching = false
+
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
 
@@ -136,7 +138,25 @@ class PokemonListActivity : ComponentActivity() {
                         unfocusedIndicatorColor = Color.Transparent,
                         disabledIndicatorColor = Color.Transparent)
                 )
-                Button(onClick = { /*TODO*/ }) {
+                Button(onClick = {
+                    if(!searching) {
+                        searching = true
+                        if(text == "")
+                            searching = false
+                        else
+                            runBlocking { mService?.findPokemon(text) }
+                    }
+                    else{
+                        if(text == ""){
+                            searching = false
+                            mService?.resetList()
+                            runBlocking { mService?.getPokemons() }
+                        }
+                        else
+                            runBlocking { mService?.findPokemon(text) }
+                    }
+
+                }) {
                     Text(text = "Buscar")
                 }
             }
@@ -146,21 +166,33 @@ class PokemonListActivity : ComponentActivity() {
 
     @Composable
     fun PokemonsList(mService: PokemonListService?) {
-        runBlocking {
-
-            mService!!.getPokemons()
+        if(!searching) {
+            runBlocking {
+                mService!!.getPokemons()
+            }
         }
         val livePokemons = mService!!.livePokemons
         val pokemons by livePokemons.observeAsState(initial = emptyList())
+
         LazyColumn {
             itemsIndexed(pokemons) { index, pokemon ->
                 PokemonListCard(pokemon = pokemon!!)
-                if (index == pokemons.lastIndex) {
+                if (index == pokemons.lastIndex && !searching) {
                     runBlocking {
                         mService.getPokemons()
                     }
                 }
             }
+        }
+        if(pokemons.isEmpty() && searching){
+            PokemonNotFound()
+        }
+    }
+
+    @Composable
+    private fun PokemonNotFound() {
+        Box(modifier = Modifier.fillMaxSize()){
+            Text(text = "Nenhum pokemon com esse nome ou id encontrado")
         }
     }
 

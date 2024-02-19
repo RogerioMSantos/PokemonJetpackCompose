@@ -1,5 +1,6 @@
 package com.example.app.data.remote.dto
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped
 import com.github.pozo.KotlinBuilder
 import kotlinx.serialization.Serializable
 
@@ -7,7 +8,8 @@ import kotlinx.serialization.Serializable
 data class GetPokemonListResponse (
     val count: Int,
     var next: String,
-    val results: MutableList<Pokemon?>
+    @JsonUnwrapped
+    val results: MutableList< Pokemon?>
 
 ) {
     @Serializable

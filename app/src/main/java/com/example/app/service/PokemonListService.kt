@@ -46,4 +46,17 @@ class PokemonListService : Service(){
             livePokemons.value = pokemons
         }
     }
+
+    suspend fun findPokemon(pokemon: Any){
+        nextPage = 0
+        val request = pokemonRepository.getPokemon(pokemon)
+        resetList()
+        if(request.name != "")
+            livePokemons.value = mutableListOf(request)
+
+    }
+
+    fun resetList(){
+        livePokemons.value = mutableListOf()
+    }
 }

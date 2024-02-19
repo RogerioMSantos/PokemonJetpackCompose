@@ -1,11 +1,15 @@
 package com.example.app.entities
 
+import com.example.app.data.remote.dto.GetPokemonResponse
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonUnwrapped
 import com.github.pozo.KotlinBuilder
 
-
-data class Pokemon (val name: String,val url:String){
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class Pokemon (val name: String,val url:String?){
     var id: Int = 0
     lateinit var sprite: String
+
     lateinit var spriteFemale: String
     lateinit var types: List<String?>
     lateinit var evolutions: List<Pokemon>
@@ -25,12 +29,15 @@ data class Pokemon (val name: String,val url:String){
 
 
     init {
-        if(url !="") {
+        if(url != null && url !="") {
             val regex = """/pokemon/(\d+).*""".toRegex()
-            this.id = regex.find(url)?.groupValues?.get(1)!!.toInt()
+            this.id = regex.find(url!!)?.groupValues?.get(1)!!.toInt()
             this.sprite =
                 "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${this.id}.png"
         }
     }
+    data class Type (
+        val type: GetPokemonResponse.Species?
+    )
 
 }

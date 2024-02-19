@@ -102,6 +102,9 @@ dependencies {
     kapt("com.github.pozo:mapstruct-kotlin-processor:1.3.1.2")
     implementation("org.mapstruct:mapstruct:1.6.0.Beta1")
 
+    //Jackson
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
+
 
 }
 // Allow references to generated code

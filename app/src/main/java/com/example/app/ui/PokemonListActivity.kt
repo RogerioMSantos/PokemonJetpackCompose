@@ -10,6 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -204,6 +205,11 @@ class PokemonListActivity : ComponentActivity() {
                 .fillMaxHeight(0.2f)
                 .background(MaterialTheme.colorScheme.background)
                 .padding(10.dp)
+                .clickable {
+                    val intent = Intent(this@PokemonListActivity,PokemonActivity::class.java)
+                    intent.putExtra("pokemon", pokemon.name);
+                    startActivity(intent)
+                }
         ) {
             Box(
                 Modifier
@@ -275,7 +281,7 @@ class PokemonListActivity : ComponentActivity() {
     suspend fun loadProgress(updateProgress: (Float) -> Unit) {
         for (i in 1..100) {
             updateProgress(i.toFloat() / 100)
-            delay(10)
+            delay(1)
         }
     }
 

@@ -20,6 +20,8 @@
         <activity
             android:name=".ui.PokemonListActivity" />
         <activity
+            android:name=".ui.PokemonActivity" />
+        <activity
             android:name=".ui.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.App">

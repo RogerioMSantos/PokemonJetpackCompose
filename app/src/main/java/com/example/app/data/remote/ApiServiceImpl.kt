@@ -2,9 +2,11 @@ package com.example.app.data.remote
 
 import com.example.app.data.remote.ApiService
 import com.example.app.data.remote.HttpRoutes
+import com.example.app.data.remote.dto.GetEvolutionChainResponse
 import com.example.app.data.remote.dto.GetPokemonListRequest
 import com.example.app.data.remote.dto.GetPokemonListResponse
 import com.example.app.data.remote.dto.GetPokemonResponse
+import com.example.app.data.remote.dto.GetPokemonSpeciesResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
@@ -79,5 +81,66 @@ class ApiServiceImpl @Inject constructor(private val client: HttpClient): ApiSer
             )
         }
 
+    }
+
+    private suspend fun getPokemonSpeciesResponse(pokemon: Any):GetPokemonSpeciesResponse {
+        return try {
+            client.get {
+                url(HttpRoutes.SPECIE + "/$pokemon")
+            }.body()
+        } catch (e: RedirectResponseException) {
+            // 3xx - responses
+            println("Error: ${e.response.status.description}")
+            return GetPokemonSpeciesResponse(GetPokemonSpeciesResponse.EvolutionChain(""))
+        } catch (e: ClientRequestException) {
+            // 4xx - responses
+            println("Error: ${e.response.status.description}")
+            return GetPokemonSpeciesResponse(GetPokemonSpeciesResponse.EvolutionChain(""))
+        } catch (e: ServerResponseException) {
+            // 5xx - responses
+            println("Error: ${e.response.status.description}")
+            return GetPokemonSpeciesResponse(GetPokemonSpeciesResponse.EvolutionChain(""))
+        } catch (e: Exception) {
+            println("Error: ${e.message}")
+            return GetPokemonSpeciesResponse(GetPokemonSpeciesResponse.EvolutionChain(""))
+        }
+    }
+
+    override suspend fun getEvolutionChain(pokemon: Any): GetEvolutionChainResponse {
+        val url = getPokemonSpeciesResponse(pokemon).evolutionChain.url
+
+        return try {
+            client.get {
+                url(url)
+            }.body()
+        }catch(e: RedirectResponseException) {
+            // 3xx - responses
+            println("Error: ${e.response.status.description}")
+            return GetEvolutionChainResponse(
+                GetEvolutionChainResponse.Chain(
+                    mutableListOf(),
+                    GetEvolutionChainResponse.Species("",""))
+            )
+        } catch(e: ClientRequestException) {
+            // 4xx - responses
+            println("Error: ${e.response.status.description}")
+            return GetEvolutionChainResponse(
+                GetEvolutionChainResponse.Chain(
+                    mutableListOf(),
+                    GetEvolutionChainResponse.Species("","")))
+        } catch(e: ServerResponseException) {
+            // 5xx - responses
+            println("Error: ${e.response.status.description}")
+            return GetEvolutionChainResponse(
+                GetEvolutionChainResponse.Chain(
+                    mutableListOf(),
+                    GetEvolutionChainResponse.Species("","")))
+        } catch(e: Exception) {
+            println("Error: ${e.message}")
+            return GetEvolutionChainResponse(
+                GetEvolutionChainResponse.Chain(
+                    mutableListOf(),
+                    GetEvolutionChainResponse.Species("","")))
+        }
     }
 }

@@ -30,7 +30,6 @@ data class GetPokemonResponse (
 
     @Serializable
     data class Type (
-        @JsonUnwrapped
         val type: Species?
     )
 
@@ -42,7 +41,7 @@ data class GetPokemonResponse (
     @JsonGetter("types")
     fun getType(): List<String>? {
         return types.stream()
-            .map { (type1): Type -> type1!!.name }
+            .map { (type) -> type!!.name }
             .collect(Collectors.toList())
     }
 }

@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import com.example.app.entities.Pokemon
 import com.example.app.repository.PokemonRepository
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -17,8 +18,12 @@ class PokemonService: Service(){
         fun getService(): PokemonService = this@PokemonService
     }
     override fun onBind(intent: Intent?): IBinder = binder
-
     @Inject
     lateinit var pokemonRepository: PokemonRepository
 
+    suspend fun getPokemon(id: String): Pokemon {
+        var pokemon = pokemonRepository.getPokemon(id)
+        pokemon.evolutions = pokemonRepository.getEvolutions(pokemon.name)
+        return pokemon
+    }
 }

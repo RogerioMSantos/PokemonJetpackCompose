@@ -33,8 +33,7 @@ class MainActivity : ComponentActivity() {
         setContent{
             AppTheme {
                 Surface {
-                    Greeting(name = "Android")
-                        listPokemon()
+                    listPokemon()
                 }
             }
         }
@@ -43,22 +42,5 @@ class MainActivity : ComponentActivity() {
     fun listPokemon(){
         val intent = Intent(this@MainActivity,PokemonListActivity::class.java)
         startActivity(intent)
-    }
-}
-
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-            text = "Hello $name!",
-            modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AppTheme {
-        Greeting("Android")
     }
 }

@@ -5,4 +5,5 @@ object HttpRoutes {
     const val LIST_POKEMON = "$BASE_URL/pokemon"
     const val POKEMON = "$BASE_URL/pokemon"
     const val EVOLUTION = "$BASE_URL/evolution-chain"
+    const val SPECIE = "$BASE_URL/pokemon-species"
 }

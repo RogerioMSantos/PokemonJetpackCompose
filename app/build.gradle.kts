@@ -105,6 +105,10 @@ dependencies {
     //Jackson
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
 
+    //Coil svg
+    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("io.coil-kt:coil-svg:2.0.0")
+
 
 }
 // Allow references to generated code

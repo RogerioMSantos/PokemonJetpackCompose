@@ -4,12 +4,15 @@ import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.app.data.remote.dto.GetPokemonListRequest
 import com.example.app.entities.Pokemon
 import com.example.app.repository.PokemonRepository
 import dagger.hilt.android.AndroidEntryPoint
+import io.objectbox.BoxStore
 import javax.inject.Inject
+import kotlin.math.log
 
 @AndroidEntryPoint
 class PokemonListService : Service(){
@@ -24,6 +27,9 @@ class PokemonListService : Service(){
 
     @Inject
     lateinit var pokemonRepository: PokemonRepository
+
+    @Inject
+    lateinit var objectBoxRepository: BoxStore
 
     val QTDPOKEMON = 50
     val livePokemons = MutableLiveData<List<Pokemon?>>()
@@ -58,5 +64,17 @@ class PokemonListService : Service(){
 
     fun resetList(){
         livePokemons.value = mutableListOf()
+    }
+
+    fun addPokemonToTeam(pokemon: Pokemon){
+        val pokemonBox = objectBoxRepository.boxFor(Pokemon::class.java)
+        pokemonBox.put(pokemon)
+    }
+
+    fun getPokemonTeam(){
+        val pokemonBox = objectBoxRepository.boxFor(Pokemon::class.java)
+        for (pkm in pokemonBox.all){
+            Log.d("pokemons","O pokemon ${pkm.name} está na lista")
+        }
     }
 }

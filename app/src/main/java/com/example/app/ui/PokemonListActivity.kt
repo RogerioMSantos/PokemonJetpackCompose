@@ -1,5 +1,6 @@
 package com.example.app.ui
 
+//import com.example.app.data.remote.ClientApplication
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -9,7 +10,6 @@ import android.os.IBinder
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,22 +31,18 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.MutableLiveData
 import coil.compose.AsyncImage
-import com.example.app.service.PokemonListService
-//import com.example.app.data.remote.ClientApplication
 import com.example.app.entities.Pokemon
+import com.example.app.service.PokemonListService
 import com.example.app.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.async
@@ -81,6 +77,10 @@ class PokemonListActivity : ComponentActivity() {
 
         }
     }
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindService(connection)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,6 +104,11 @@ class PokemonListActivity : ComponentActivity() {
                     } else {
                         Column {
                             PokemonSearch(mService)
+                            Button(onClick = {
+                                mService?.getPokemonTeam()
+                            }) {
+
+                            }
                             PokemonsList(mService)
 
                         }
@@ -206,7 +211,7 @@ class PokemonListActivity : ComponentActivity() {
                 .background(MaterialTheme.colorScheme.background)
                 .padding(10.dp)
                 .clickable {
-                    val intent = Intent(this@PokemonListActivity,PokemonActivity::class.java)
+                    val intent = Intent(this@PokemonListActivity, PokemonActivity::class.java)
                     intent.putExtra("pokemon", pokemon.name);
                     startActivity(intent)
                 }
@@ -220,10 +225,11 @@ class PokemonListActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box {
+                    Box(Modifier.size(90.dp),
+                        contentAlignment = Alignment.CenterStart) {
                         Text(
                             text = "#${pokemon.id}",
-                            fontSize = 50.sp,
+                            fontSize = 35.sp,
                             textAlign = TextAlign.Center,
                             color = Color(0xFFE1D8C4)
                         )
@@ -235,11 +241,24 @@ class PokemonListActivity : ComponentActivity() {
                             modifier = Modifier.size(100.dp)
                         )
                     }
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.CenterStart
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(end = 15.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Text(text = pokemon.name.replaceFirstChar { it.uppercaseChar() })
+
+                        Box(
+//                        modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Text(text = pokemon.name.replaceFirstChar { it.uppercaseChar() })
+                        }
+                        Box(modifier = Modifier.clickable {
+                            mService?.addPokemonToTeam(pokemon)
+                        }){
+                            Text(text = "+")
+                        }
                     }
                 }
             }

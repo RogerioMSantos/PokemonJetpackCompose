@@ -22,14 +22,19 @@ import com.example.app.ui.theme.type_color_water
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import com.github.pozo.KotlinBuilder
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
 
+@Entity
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class Pokemon (val name: String,val url:String?){
+data class Pokemon (val name: String = "",val url:String? = ""){
+    @Id var primaryID: Long = 0
     var id: Int = 0
     lateinit var sprite: String
 
     var spriteFemale: String? = null
     lateinit var types: List<String?>
+    @Transient
     lateinit var evolutions: EvolutionChain
 
 

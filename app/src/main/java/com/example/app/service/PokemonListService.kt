@@ -8,11 +8,11 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.app.data.remote.dto.GetPokemonListRequest
 import com.example.app.entities.Pokemon
+import com.example.app.entities.Pokemon_
 import com.example.app.repository.PokemonRepository
 import dagger.hilt.android.AndroidEntryPoint
 import io.objectbox.BoxStore
 import javax.inject.Inject
-import kotlin.math.log
 
 @AndroidEntryPoint
 class PokemonListService : Service(){
@@ -76,5 +76,16 @@ class PokemonListService : Service(){
         for (pkm in pokemonBox.all){
             Log.d("pokemons","O pokemon ${pkm.name} está na lista")
         }
+    }
+
+    fun findOnTeam(pokemon: Pokemon): Boolean {
+        val pokemonBox = objectBoxRepository.boxFor(Pokemon::class.java)
+        val pokemons = pokemonBox.query(Pokemon_.id.equal(pokemon.id)).build().find()
+        return pokemons.size > 0
+    }
+
+    fun removePokemonTeam(pokemon: Pokemon) {
+        val pokemonBox = objectBoxRepository.boxFor(Pokemon::class.java)
+        pokemonBox.query(Pokemon_.id.equal(pokemon.id)).build().remove()
     }
 }

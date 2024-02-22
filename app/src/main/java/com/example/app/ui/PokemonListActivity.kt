@@ -1,6 +1,7 @@
 package com.example.app.ui
 
 //import com.example.app.data.remote.ClientApplication
+import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -23,10 +24,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -77,11 +83,13 @@ class PokemonListActivity : ComponentActivity() {
 
         }
     }
+
     override fun onDestroy() {
         super.onDestroy()
         unbindService(connection)
     }
 
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -96,21 +104,21 @@ class PokemonListActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-
-                    if (loading) {
-                        Loading(state) {
-                            loading = it
+                    Scaffold(
+                        bottomBar = {
+                            NavigationBarActivity.CreateNavigationBar(this)
                         }
-                    } else {
-                        Column {
-                            PokemonSearch(mService)
-                            Button(onClick = {
-                                mService?.getPokemonTeam()
-                            }) {
+                    ) {
 
+                        if (loading) {
+                            Loading(state) {
+                                loading = it
                             }
-                            PokemonsList(mService)
-
+                        } else {
+                            Column {
+                                PokemonSearch(mService)
+                                PokemonList(mService)
+                            }
                         }
                     }
                 }
@@ -119,17 +127,20 @@ class PokemonListActivity : ComponentActivity() {
     }
 
     @Composable
-    fun PokemonSearch(mService: PokemonListService?){
+    fun PokemonSearch(mService: PokemonListService?) {
         var text by remember {
             mutableStateOf("")
         }
-        Box (modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp),
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
             contentAlignment = Alignment.CenterStart
-            ){
-            Row(horizontalArrangement = Arrangement.SpaceAround,
-                    modifier = Modifier.fillMaxWidth()) {
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 TextField(
                     modifier = Modifier.fillMaxWidth(0.7f),
                     shape = RoundedCornerShape(50.dp),
@@ -137,28 +148,27 @@ class PokemonListActivity : ComponentActivity() {
                     onValueChange = { text = it },
                     maxLines = 1,
                     placeholder = {
-                            Text(text = "Digite o nome ou o id do pokemon")
+                        Text(text = "Digite o nome ou o id do pokemon")
                     },
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent)
+                        disabledIndicatorColor = Color.Transparent
+                    )
                 )
                 Button(onClick = {
-                    if(!searching) {
+                    if (!searching) {
                         searching = true
-                        if(text == "")
+                        if (text == "")
                             searching = false
                         else
                             runBlocking { mService?.findPokemon(text) }
-                    }
-                    else{
-                        if(text == ""){
+                    } else {
+                        if (text == "") {
                             searching = false
                             mService?.resetList()
                             runBlocking { mService?.getPokemons() }
-                        }
-                        else
+                        } else
                             runBlocking { mService?.findPokemon(text) }
                     }
 
@@ -171,8 +181,8 @@ class PokemonListActivity : ComponentActivity() {
     }
 
     @Composable
-    fun PokemonsList(mService: PokemonListService?) {
-        if(!searching) {
+    fun PokemonList(mService: PokemonListService?) {
+        if (!searching) {
             runBlocking {
                 mService!!.getPokemons()
             }
@@ -190,14 +200,14 @@ class PokemonListActivity : ComponentActivity() {
                 }
             }
         }
-        if(pokemons.isEmpty() && searching){
+        if (pokemons.isEmpty() && searching) {
             PokemonNotFound()
         }
     }
 
     @Composable
     private fun PokemonNotFound() {
-        Box(modifier = Modifier.fillMaxSize()){
+        Box(modifier = Modifier.fillMaxSize()) {
             Text(text = "Nenhum pokemon com esse nome ou id encontrado")
         }
     }
@@ -225,8 +235,10 @@ class PokemonListActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(Modifier.size(90.dp),
-                        contentAlignment = Alignment.CenterStart) {
+                    Box(
+                        Modifier.size(90.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
                         Text(
                             text = "#${pokemon.id}",
                             fontSize = 35.sp,
@@ -254,55 +266,49 @@ class PokemonListActivity : ComponentActivity() {
                         ) {
                             Text(text = pokemon.name.replaceFirstChar { it.uppercaseChar() })
                         }
-                        Box(modifier = Modifier.clickable {
-                            mService?.addPokemonToTeam(pokemon)
-                        }){
-                            Text(text = "+")
-                        }
                     }
                 }
             }
         }
     }
-
-    @Composable
-    fun Loading(state: State<Boolean>, loadingState: (Boolean) -> Unit) {
-        var progress by remember { mutableFloatStateOf(0.1f) }
-        var loading by remember {
-            mutableStateOf(false)
-        }
-        val scope = rememberCoroutineScope()
-
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(
-                progress = progress
-            )
-        }
-        LaunchedEffect(key1 = progress) {
-            if (!loading) {
-                loading = true
-
-                scope.async {
-                    loadProgress { newProgress ->
-                        progress = newProgress
-                    }
-                }.await()
-            }
-            if (progress >= 1f && state.value) {
-                loadingState(false)
-            }
-        }
-    }
-
-    suspend fun loadProgress(updateProgress: (Float) -> Unit) {
-        for (i in 1..100) {
-            updateProgress(i.toFloat() / 100)
-            delay(1)
-        }
-    }
-
-
 }
+
+@Composable
+fun Loading(state: State<Boolean>, loadingState: (Boolean) -> Unit) {
+    var progress by remember { mutableFloatStateOf(0.1f) }
+    var loading by remember {
+        mutableStateOf(false)
+    }
+    val scope = rememberCoroutineScope()
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(
+            progress = progress
+        )
+    }
+    LaunchedEffect(key1 = progress) {
+        if (!loading) {
+            loading = true
+
+            scope.async {
+                loadProgress { newProgress ->
+                    progress = newProgress
+                }
+            }.await()
+        }
+        if (progress >= 1f && state.value) {
+            loadingState(false)
+        }
+    }
+}
+
+suspend fun loadProgress(updateProgress: (Float) -> Unit) {
+    for (i in 1..100) {
+        updateProgress(i.toFloat() / 100)
+        delay(1)
+    }
+}
+

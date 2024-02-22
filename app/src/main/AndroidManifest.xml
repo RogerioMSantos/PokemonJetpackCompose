@@ -17,10 +17,13 @@
 
         <service android:name=".service.PokemonListService"/>
         <service android:name=".service.PokemonService"/>
+        <service android:name=".service.PokemonTeamService"/>
         <activity
             android:name=".ui.PokemonListActivity" />
         <activity
             android:name=".ui.PokemonActivity" />
+        <activity
+            android:name=".ui.PokemonTeamActivity" />
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"

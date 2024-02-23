@@ -13,6 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -142,7 +143,7 @@ class PokemonTeamActivity : ComponentActivity() {
         if (teams.isEmpty()) {
             TeamNotFound(openDialog)
         }
-        LazyColumn {
+        LazyColumn (contentPadding = PaddingValues(bottom = 70.dp)){
             itemsIndexed(teams) { _, team ->
                 var openAddPokemon by remember {
                     mutableStateOf(false)
@@ -162,8 +163,8 @@ class PokemonTeamActivity : ComponentActivity() {
 
     }
 
-    private @Composable
-    fun TeamItemCard(team: Team,openAddPokemon: ()->Unit) {
+     @Composable
+    private fun TeamItemCard(team: Team,openAddPokemon: ()->Unit) {
         Card(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.background)
@@ -216,8 +217,8 @@ class PokemonTeamActivity : ComponentActivity() {
         }
     }
 
-    private @Composable
-    fun TeamPokemonItem(pokemons: ToMany<Pokemon>) {
+    @Composable
+    private fun TeamPokemonItem(pokemons: ToMany<Pokemon>) {
         Row(horizontalArrangement = Arrangement.Start,
             modifier = Modifier.fillMaxWidth()) {
             for (i in 0..6) {
@@ -292,7 +293,6 @@ private fun CreateTeam(mService: PokemonTeamService?,closeDialog: () -> Unit) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPokemonOnTeam(mService: PokemonTeamService?,team: Team,closeDialog: () -> Unit){
     val addPokemons = mutableListOf<Pokemon>()

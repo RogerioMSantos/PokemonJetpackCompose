@@ -15,6 +15,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.MutableLiveData
@@ -186,7 +188,9 @@ class PokemonListActivity : ComponentActivity() {
         val livePokemons = mService!!.livePokemons
         val pokemons by livePokemons.observeAsState(initial = emptyList())
 
-        LazyColumn {
+        LazyColumn(
+            contentPadding = PaddingValues(bottom = 70.dp)
+        ) {
             itemsIndexed(pokemons) { index, pokemon ->
                 PokemonListCard(pokemon = pokemon!!)
                 if (index == pokemons.lastIndex && !searching) {

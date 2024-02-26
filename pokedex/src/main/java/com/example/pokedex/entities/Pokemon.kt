@@ -45,6 +45,7 @@ data class Pokemon (val name: String = "",val url:String? = ""){
             this.sprite =
                 "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${this.id}.png"
         }
+        else this.sprite = ""
     }
 
     fun getSpriteType(): List<String>{
@@ -64,7 +65,7 @@ data class Pokemon (val name: String = "",val url:String? = ""){
             "water" to type_color_water,
             "grass" to type_color_grass,
             "flying" to type_color_flying,
-            "fight" to type_color_fight,
+            "fighting" to type_color_fight,
             "poison" to type_color_poison,
             "electric" to type_color_electric,
             "ground" to type_color_ground,

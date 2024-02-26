@@ -19,15 +19,20 @@
         <service android:name=".service.PokemonService"/>
         <service android:name=".service.PokemonTeamService"/>
         <activity
-            android:name=".ui.PokemonListActivity" />
+            android:name=".ui.PokemonListActivity"
+            android:screenOrientation="portrait"/>
+
         <activity
-            android:name=".ui.PokemonActivity" />
+            android:name=".ui.PokemonActivity"
+            android:screenOrientation="portrait"/>
         <activity
-            android:name=".ui.PokemonTeamActivity" />
+            android:name=".ui.PokemonTeamActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.App">
+            android:theme="@style/Theme.App"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,9 +50,13 @@ import com.example.pokedex.entities.Pokemon
 import com.example.pokedex.service.PokemonListService
 import com.example.pokedex.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class PokemonListActivity : ComponentActivity() {
@@ -87,7 +92,7 @@ class PokemonListActivity : ComponentActivity() {
         unbindService(connection)
     }
 
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+//    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -118,6 +123,7 @@ class PokemonListActivity : ComponentActivity() {
                                 PokemonList(mService)
                             }
                         }
+                        Spacer(modifier = Modifier.size(it.calculateBottomPadding()))
                     }
                 }
             }
@@ -180,9 +186,12 @@ class PokemonListActivity : ComponentActivity() {
 
     @Composable
     fun PokemonList(mService: PokemonListService?) {
+
         if (!searching) {
-            runBlocking {
-                mService!!.getPokemons()
+            LaunchedEffect(Dispatchers.IO) {
+                launch {
+                    mService!!.getPokemons()
+                }
             }
         }
         val livePokemons = mService!!.livePokemons
@@ -194,8 +203,10 @@ class PokemonListActivity : ComponentActivity() {
             itemsIndexed(pokemons) { index, pokemon ->
                 PokemonListCard(pokemon = pokemon!!)
                 if (index == pokemons.lastIndex && !searching) {
-                    runBlocking {
-                        mService.getPokemons()
+                    LaunchedEffect(Dispatchers.IO) {
+                        launch {
+                            mService.getPokemons()
+                        }
                     }
                 }
             }

@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
 
 
 
-    fun listPokemon(){
+    private fun listPokemon(){
         Intent(this@MainActivity,PokemonListActivity::class.java).also {
             startActivity(it)
         }
